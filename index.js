@@ -1,16 +1,30 @@
-const QRCode = require('qrcode');
-// const fs = require('fs');
+const express = require('express');
+const path = require('path');
+const qrcode = require('qrcode');
+const port = 5000;
+const app = express();
 
-async function generateQRCode(link, filename) {
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: true
+}));
+
+
+
+app.get('/', (req, res)=>{
+  res.sendFile(path.join(__dirname, 'index.html'));
+})
+
+app.post('/Generate-Qr', async(req, res) => {
   try {
-    await QRCode.toFile(filename, link);
-    console.log('QR code generated successfully.');
+    const {url} = req.body;
+    const GenerateQr = await qrcode.toDataURL(url);
+    res.send(`<img src="${GenerateQr}" alt="QR Code">`); 
   } catch (error) {
-    console.error('Failed to generate QR code:', error);
+    res.status(400).send('Eror')
   }
-}
+})
 
-let link = 'https://music.youtube.com/watch?v=2u2Z07ujyD8&list=RDAMVM2u2Z07ujyD8';
-const filename = 'qrcode.png';
-
-generateQRCode(link, filename);
+app.listen(port, () => {
+  console.log('port = ' + port);
+})
